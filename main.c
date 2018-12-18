@@ -1,9 +1,13 @@
 /***************************************************************************//**
-																			 @file         main.c
-																			 @author       Ante Bircic
-																			 @date         Sunday,  9 December 2018
-																			 @brief        MMSH (Ante Bircic SHell)
-																			 *******************************************************************************/
+	@file         main.c
+	
+	@author       Ante Bircic
+
+	@date         Sunday,  9 December 2018
+
+	@brief        MMSH (Ante Bircic SHell)
+
+*******************************************************************************/
 
 #include <sys/wait.h>
 #include <sys/types.h>
@@ -15,9 +19,9 @@
 #include <stdio.h>
 #include <string.h>
 
-																			 /*
-																			 Function Declarations for builtin shell commands:
-																			 */
+/*
+Function Declarations for builtin shell commands:
+*/
 int mmsh_echo(char **args);
 int mmsh_pwd(char **args);
 int mmsh_cd(char **args);
