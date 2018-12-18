@@ -3,9 +3,9 @@
 	
 	@author       Ante Bircic
 
-	@date         Sunday,  9 December 2018
+	@date         Monday,  17 December 2018
 
-	@brief        MMSH (Ante Bircic SHell)
+	@brief        AASH (Ante Bircic SHell)
 
 *******************************************************************************/
 
@@ -24,11 +24,9 @@ Function Declarations for builtin shell commands:
 */
 int mmsh_echo(char **args);
 int mmsh_pwd(char **args);
-int mmsh_cd(char **args);
 int mmsh_ls(char **args);
 int mmsh_mkdir(char **args);
-int mmsh_touch(char **args);
-int mmsh_rm(char **args);
+int mmsh_cd(char **args);
 int mmsh_help(char **args);
 int mmsh_exit(char **args);
 
@@ -38,11 +36,9 @@ List of builtin commands, followed by their corresponding functions.
 char *builtin_str[] = {
 	"echo",
 	"pwd",
-	"cd",
 	"ls",
 	"mkdir",
-	"touch",
-	"rm",
+	"cd",
 	"help",
 	"exit"
 };
@@ -50,11 +46,9 @@ char *builtin_str[] = {
 int(*builtin_func[]) (char **) = {
 	&mmsh_echo,
 	&mmsh_pwd,
-	&mmsh_cd,
 	&mmsh_ls,
 	&mmsh_mkdir,
-	&mmsh_touch,
-	&mmsh_rm,
+	&mmsh_cd,
 	&mmsh_help,
 	&mmsh_exit
 };
@@ -155,39 +149,6 @@ int mmsh_mkdir(char **args)
 	return 1;
 }
 
-/**
-@brief Bultin command: touch file.
-@param args List of args.  args[0] is "touch".  args[1] is the file path.
-@return Always returns 1, to continue executing.
-*/
-int mmsh_touch(char **args)
-{
-	if (args[1] == NULL) {
-		fprintf(stderr, "mmsh: expected argument to \"touch\"\n");
-	}
-	else {
-		if (creat(args[1], 0755) != 0) {
-			perror("mmsh");
-		}
-	}
-	return 1;
-}
-
-/**
-@brief Bultin command: remove file or directory.
-@param args List of args.  args[0] is "rm".  args[1] is the file path.
-@return Always returns 1, to continue executing.
-*/
-int mmsh_rm(char **args)
-{
-	if (remove(args[1]) == 0) {
-		printf("File deleted successfully");
-	}
-	else {
-		printf("Error: unable to delete the file");
-	}
-	return 1;
-}
 
 /**
 @brief Builtin command: print help.
