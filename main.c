@@ -22,13 +22,13 @@
 /*
 Function Declarations for builtin shell commands:
 */
-int mmsh_echo(char **args);
-int mmsh_pwd(char **args);
-int mmsh_ls(char **args);
-int mmsh_mkdir(char **args);
-int mmsh_cd(char **args);
-int mmsh_help(char **args);
-int mmsh_exit(char **args);
+int lsh_echo(char **args);
+int lsh_pwd(char **args);
+int lsh_ls(char **args);
+int lsh_mkdir(char **args);
+int lsh_cd(char **args);
+int lsh_help(char **args);
+int lsh_exit(char **args);
 
 /*
 List of builtin commands, followed by their corresponding functions.
@@ -44,16 +44,16 @@ char *builtin_str[] = {
 };
 
 int(*builtin_func[]) (char **) = {
-	&mmsh_echo,
-	&mmsh_pwd,
-	&mmsh_ls,
-	&mmsh_mkdir,
-	&mmsh_cd,
-	&mmsh_help,
-	&mmsh_exit
+	&lsh_echo,
+	&lsh_pwd,
+	&lsh_ls,
+	&lsh_mkdir,
+	&lsh_cd,
+	&lsh_help,
+	&lsh_exit
 };
 
-int mmsh_num_builtins() {
+int lsh_num_builtins() {
 	return sizeof(builtin_str) / sizeof(char *);
 }
 
@@ -66,7 +66,7 @@ Builtin function implementations.
 @param args List of args.  args[0] is "echo".  args[1] is the string for echoing.
 @return Always returns 1, to continue executing.
 */
-int mmsh_echo(char **args)
+int lsh_echo(char **args)
 {
 	int i = 1;
 	while (args[i] != NULL) {
@@ -82,7 +82,7 @@ int mmsh_echo(char **args)
 @param args List of args.  args[0] is "cd".  args[1] is the directory.
 @return Always returns 1, to continue executing.
 */
-int mmsh_pwd(char **args)
+int lsh_pwd(char **args)
 {
 	char cwd[1024];
 	getcwd(cwd, sizeof(cwd));
@@ -95,14 +95,14 @@ int mmsh_pwd(char **args)
 @param args List of args.  args[0] is "cd".  args[1] is the directory.
 @return Always returns 1, to continue executing.
 */
-int mmsh_cd(char **args)
+int lsh_cd(char **args)
 {
 	if (args[1] == NULL) {
-		fprintf(stderr, "mmsh: expected argument to \"cd\"\n");
+		fprintf(stderr, "lsh: expected argument to \"cd\"\n");
 	}
 	else {
 		if (chdir(args[1]) != 0) {
-			perror("mmsh");
+			perror("lsh");
 		}
 	}
 	return 1;
@@ -113,7 +113,7 @@ int mmsh_cd(char **args)
 @param args List of args.  args[0] is "ls".
 @return Always returns 1, to continue executing.
 */
-int mmsh_ls(char **args)
+int lsh_ls(char **args)
 {
 	DIR *dp;
 	struct dirent *ep;
@@ -136,14 +136,14 @@ int mmsh_ls(char **args)
 @param args List of args.  args[0] is "mkdir".  args[1] is the directory.
 @return Always returns 1, to continue executing.
 */
-int mmsh_mkdir(char **args)
+int lsh_mkdir(char **args)
 {
 	if (args[1] == NULL) {
-		fprintf(stderr, "mmsh: expected argument to \"mkdir\"\n");
+		fprintf(stderr, "lsh: expected argument to \"mkdir\"\n");
 	}
 	else {
 		if (mkdir(args[1], 0755) != 0) {
-			perror("mmsh");
+			perror("lsh");
 		}
 	}
 	return 1;
@@ -155,14 +155,14 @@ int mmsh_mkdir(char **args)
 @param args List of args.  Not examined.
 @return Always returns 1, to continue executing.
 */
-int mmsh_help(char **args)
+int lsh_help(char **args)
 {
 	int i;
 	printf("Stephen Brennan's LSH\n");
 	printf("Type program names and arguments, and hit enter.\n");
 	printf("The following are built in:\n");
 
-	for (i = 0; i < mmsh_num_builtins(); i++) {
+	for (i = 0; i < lsh_num_builtins(); i++) {
 		printf("  %s\n", builtin_str[i]);
 	}
 
@@ -175,7 +175,7 @@ int mmsh_help(char **args)
 @param args List of args.  Not examined.
 @return Always returns 0, to terminate execution.
 */
-int mmsh_exit(char **args)
+int lsh_exit(char **args)
 {
 	return 0;
 }
@@ -185,7 +185,7 @@ int mmsh_exit(char **args)
 @param args Null terminated list of arguments (including program).
 @return Always returns 1, to continue execution.
 */
-int mmsh_launch(char **args)
+int lsh_launch(char **args)
 {
 	pid_t pid;
 	int status;
@@ -194,13 +194,13 @@ int mmsh_launch(char **args)
 	if (pid == 0) {
 		// Child process
 		if (execvp(args[0], args) == -1) {
-			perror("mmsh");
+			perror("lsh");
 		}
 		exit(EXIT_FAILURE);
 	}
 	else if (pid < 0) {
 		// Error forking
-		perror("mmsh");
+		perror("lsh");
 	}
 	else {
 		// Parent process
@@ -217,7 +217,7 @@ int mmsh_launch(char **args)
 @param args Null terminated list of arguments.
 @return 1 if the shell should continue running, 0 if it should terminate
 */
-int mmsh_execute(char **args)
+int lsh_execute(char **args)
 {
 	int i;
 
@@ -226,13 +226,13 @@ int mmsh_execute(char **args)
 		return 1;
 	}
 
-	for (i = 0; i < mmsh_num_builtins(); i++) {
+	for (i = 0; i < lsh_num_builtins(); i++) {
 		if (strcmp(args[0], builtin_str[i]) == 0) {
 			return (*builtin_func[i])(args);
 		}
 	}
 
-	return mmsh_launch(args);
+	return lsh_launch(args);
 }
 
 #define LSH_RL_BUFSIZE 1024
@@ -240,7 +240,7 @@ int mmsh_execute(char **args)
 @brief Read a line of input from stdin.
 @return The line from stdin.
 */
-char *mmsh_read_line(void)
+char *lsh_read_line(void)
 {
 	int bufsize = LSH_RL_BUFSIZE;
 	int position = 0;
@@ -248,7 +248,7 @@ char *mmsh_read_line(void)
 	int c;
 
 	if (!buffer) {
-		fprintf(stderr, "mmsh: allocation error\n");
+		fprintf(stderr, "lsh: allocation error\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -273,7 +273,7 @@ char *mmsh_read_line(void)
 			bufsize += LSH_RL_BUFSIZE;
 			buffer = realloc(buffer, bufsize);
 			if (!buffer) {
-				fprintf(stderr, "mmsh: allocation error\n");
+				fprintf(stderr, "lsh: allocation error\n");
 				exit(EXIT_FAILURE);
 			}
 		}
@@ -287,14 +287,14 @@ char *mmsh_read_line(void)
 @param line The line.
 @return Null-terminated array of tokens.
 */
-char **mmsh_split_line(char *line)
+char **lsh_split_line(char *line)
 {
 	int bufsize = LSH_TOK_BUFSIZE, position = 0;
 	char **tokens = malloc(bufsize * sizeof(char*));
 	char *token, **tokens_backup;
 
 	if (!tokens) {
-		fprintf(stderr, "mmsh: allocation error\n");
+		fprintf(stderr, "lsh: allocation error\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -309,7 +309,7 @@ char **mmsh_split_line(char *line)
 			tokens = realloc(tokens, bufsize * sizeof(char*));
 			if (!tokens) {
 				free(tokens_backup);
-				fprintf(stderr, "mmsh: allocation error\n");
+				fprintf(stderr, "lsh: allocation error\n");
 				exit(EXIT_FAILURE);
 			}
 		}
@@ -323,7 +323,7 @@ char **mmsh_split_line(char *line)
 /**
 @brief Loop getting input and executing it.
 */
-void mmsh_loop(void)
+void lsh_loop(void)
 {
 	char *line;
 	char **args;
@@ -331,9 +331,9 @@ void mmsh_loop(void)
 
 	do {
 		printf("> ");
-		line = mmsh_read_line();
-		args = mmsh_split_line(line);
-		status = mmsh_execute(args);
+		line = lsh_read_line();
+		args = lsh_split_line(line);
+		status = lsh_execute(args);
 
 		free(line);
 		free(args);
@@ -351,7 +351,7 @@ int main(int argc, char **argv)
 	// Load config files, if any.
 
 	// Run command loop.
-	mmsh_loop();
+	lsh_loop();
 
 	// Perform any shutdown/cleanup.
 
